@@ -7,17 +7,29 @@ const {
   deleteStudentByUidQuery,
 } = require("./../../../database/queries");
 
-const getStudents = async (req, res) => {
+/**
+ * Check if poolOverride was injected as third argument for testing purposes. If not we are using the
+ * actual database pool.
+ * @param {js arguments object} args
+ */
+const checkIfPoolOverrideWasInjectedAsArg = (args) => {
+  args.length === 3 ? (poolOverride = args[2]) : (poolOverride = undefined);
+};
+
+const getStudents = async (_, res) => {
+  checkIfPoolOverrideWasInjectedAsArg(arguments);
   try {
     const myPool = poolOverride === undefined ? pool : poolOverride;
     const { rows } = await myPool.query(getStudentsQuery);
     res.status(200).json(rows);
   } catch (error) {
+    console.error(error.message);
     res.status(500).send({ message: "Internal Server Error" });
   }
 };
 
 const getStudentByUid = async (req, res) => {
+  checkIfPoolOverrideWasInjectedAsArg(arguments);
   const studentId = req.params.uid;
   try {
     const myPool = poolOverride === undefined ? pool : poolOverride;
@@ -33,10 +45,12 @@ const getStudentByUid = async (req, res) => {
 };
 
 const addStudent = async (req, res) => {
+  checkIfPoolOverrideWasInjectedAsArg(arguments);
   const { first_name, last_name, gender, email, date_of_birth } = req.body;
+  const myPool = poolOverride === undefined ? pool : poolOverride;
+
   // Check if email exists.
   try {
-    const myPool = poolOverride === undefined ? pool : poolOverride;
     const { rows } = await myPool.query(checkEmailExistsQuery, [email]);
     if (rows.length > 0) {
       res.status(409).send({ message: "Email already exists" });
@@ -48,7 +62,7 @@ const addStudent = async (req, res) => {
   }
 
   try {
-    await pool.query(addStudentQuery, [
+    await myPool.query(addStudentQuery, [
       first_name,
       last_name,
       gender,
@@ -62,8 +76,8 @@ const addStudent = async (req, res) => {
 };
 
 const deleteStudentByUid = async (req, res, poolOverride) => {
+  checkIfPoolOverrideWasInjectedAsArg(arguments);
   const studentUid = req.params.uid;
-
   try {
     const myPool = poolOverride === undefined ? pool : poolOverride;
     const { rows } = await myPool.query(deleteStudentByUidQuery, [studentUid]);
