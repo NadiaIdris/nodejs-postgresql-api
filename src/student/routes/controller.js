@@ -1,4 +1,4 @@
-const pool = require("../../../database/database");
+const dbPool = require("../../../database/database");
 const {
   getStudentsQuery,
   getStudentByUidQuery,
@@ -7,20 +7,10 @@ const {
   deleteStudentByUidQuery,
 } = require("./../../../database/queries");
 
-/**
- * Check if poolOverride was injected as third argument for testing purposes. If not we are using the
- * actual database pool.
- * @param {js arguments object} args
- */
-const checkIfPoolOverrideWasInjectedAsArg = (args) => {
-  args.length === 3 ? (poolOverride = args[2]) : (poolOverride = undefined);
-};
-
-const getStudents = async (_, res) => {
-  checkIfPoolOverrideWasInjectedAsArg(arguments);
+const getStudents = async (_, res, poolOverride) => {
+  const pool = getPool(dbPool, poolOverride);
   try {
-    const myPool = poolOverride === undefined ? pool : poolOverride;
-    const { rows } = await myPool.query(getStudentsQuery);
+    const { rows } = await pool.query(getStudentsQuery);
     res.status(200).json(rows);
   } catch (error) {
     console.error(error.message);
@@ -28,12 +18,11 @@ const getStudents = async (_, res) => {
   }
 };
 
-const getStudentByUid = async (req, res) => {
-  checkIfPoolOverrideWasInjectedAsArg(arguments);
+const getStudentByUid = async (req, res, poolOverride) => {
+  const pool = getPool(dbPool, poolOverride);
   const studentId = req.params.uid;
   try {
-    const myPool = poolOverride === undefined ? pool : poolOverride;
-    const { rows } = await myPool.query(getStudentByUidQuery, [studentId]);
+    const { rows } = await pool.query(getStudentByUidQuery, [studentId]);
     if (rows.length === 0) {
       res.status(404).send({ message: "Student not found" });
       return;
@@ -44,14 +33,13 @@ const getStudentByUid = async (req, res) => {
   }
 };
 
-const addStudent = async (req, res) => {
-  checkIfPoolOverrideWasInjectedAsArg(arguments);
+const addStudent = async (req, res, poolOverride) => {
+  const pool = getPool(dbPool, poolOverride);
   const { first_name, last_name, gender, email, date_of_birth } = req.body;
-  const myPool = poolOverride === undefined ? pool : poolOverride;
 
   // Check if email exists.
   try {
-    const { rows } = await myPool.query(checkEmailExistsQuery, [email]);
+    const { rows } = await pool.query(checkEmailExistsQuery, [email]);
     if (rows.length > 0) {
       res.status(409).send({ message: "Email already exists" });
       return;
@@ -62,7 +50,7 @@ const addStudent = async (req, res) => {
   }
 
   try {
-    await myPool.query(addStudentQuery, [
+    await pool.query(addStudentQuery, [
       first_name,
       last_name,
       gender,
@@ -76,11 +64,11 @@ const addStudent = async (req, res) => {
 };
 
 const deleteStudentByUid = async (req, res, poolOverride) => {
-  checkIfPoolOverrideWasInjectedAsArg(arguments);
+  const pool = getPool(dbPool, poolOverride);
+
   const studentUid = req.params.uid;
   try {
-    const myPool = poolOverride === undefined ? pool : poolOverride;
-    const { rows } = await myPool.query(deleteStudentByUidQuery, [studentUid]);
+    const { rows } = await pool.query(deleteStudentByUidQuery, [studentUid]);
     if (rows.length === 0) {
       res.status(404).send({ message: "Student not found" });
       return;
@@ -91,6 +79,18 @@ const deleteStudentByUid = async (req, res, poolOverride) => {
     res.status(500).send({ message: "Internal Server Error" });
   }
 };
+
+/**
+ * In testing, we mock up the pool object and pass it as an argument to the function.
+ * In production, we don't pass 'pool' as an argument to the function. We use the imported pool.
+ * Because we use Express Routes, we need to check if the poolOverride is a function or not.
+ * Because Express Routes allow to pass middleware functions as arguments after req and res arguments.
+ * So, if the poolOverride is a function, we are calling this function in production and we use
+ * the imported pool instead.
+ */
+function getPool(pool, poolOverride) {
+  return typeof poolOverride === "function" ? pool : poolOverride;
+}
 
 module.exports = {
   getStudents,
