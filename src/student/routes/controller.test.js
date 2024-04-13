@@ -1,11 +1,80 @@
-const { deleteStudentByUid } = require("./controller");
-const { deleteStudentByUidQuery } = require("./../../../database/queries");
+const { getStudents, deleteStudentByUid } = require("./controller");
+const {
+  deleteStudentByUidQuery,
+  getStudentsQuery,
+} = require("./../../../database/queries");
+
+describe("getStudents", () => {
+  it("should return an empty list if no students exist", async () => { 
+    const req = {};
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    const pool = {
+      query: jest.fn().mockResolvedValue({ rows: [] }),
+    };
+    await getStudents(req, res, pool);
+    expect(pool.query).toHaveBeenCalledWith(getStudentsQuery);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith([]);
+  });
+
+  it("should return a list of students if students exist", async () => {
+    const req = {};
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    const pool = {
+      query: jest.fn().mockResolvedValue({
+        rows: [
+          {
+            student_uid: "01149f96-4dd3-4cb9-96a1-0a8c67b88186",
+            first_name: "Tom",
+            last_name: "Ford",
+            gender: null,
+            email: "tom@gmail.com",
+            date_of_birth: "1988-12-30T06:00:00.000Z",
+          }
+        ],
+      }),
+    };
+    await getStudents(req, res, pool);
+    expect(pool.query).toHaveBeenCalledWith(getStudentsQuery);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith([
+      {
+        student_uid: "01149f96-4dd3-4cb9-96a1-0a8c67b88186",
+        first_name: "Tom",
+        last_name: "Ford",
+        gender: null,
+        email: "tom@gmail.com",
+        date_of_birth: "1988-12-30T06:00:00.000Z",
+      }
+    ]);
+  });
+
+  it("should return a 500 error if an internal server error occurs", async () => { 
+    const req = {};
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+    const pool = {
+      query: jest.fn().mockRejectedValue(new Error("Database error")),
+    };
+    await getStudents(req, res, pool);
+    expect(pool.query).toHaveBeenCalledWith(getStudentsQuery);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({ message: "Internal Server Error" });
+  });
+});
 
 describe("deleteStudentByUid", () => {
   const studentUid = "03279879-c371-4102-8334-8bebe3617b9e";
 
   it("should delete a student and return success message", async () => {
-    const studentUid = "03279879-c371-4102-8334-8bebe3617b9e";
     const req = {
       params: {
         uid: studentUid,
