@@ -8,6 +8,7 @@ const {
   getStudentsQuery,
   getStudentByUidQuery,
 } = require("./../../../database/queries");
+const e = require("express");
 
 describe("getStudents", () => {
   it("should return an empty list if no students exist", async () => {
@@ -108,12 +109,12 @@ describe("getStudentByUid", () => {
       query: jest.fn().mockResolvedValue({
         rows: [
           {
-            student_uid: studentUid,
+            student_uid: "03279879-c371-4102-8334-8bebe3617b9e",
             first_name: "Samantha",
             last_name: "Thomson",
             gender: "Female",
             email: "samanthathomson@gmail.com",
-            date_of_birth: "1979-05-04T06:00:00.000Z",
+            date_of_birth: "1979-05-04T06:00:00.000Z"
           },
         ],
       }),
@@ -122,13 +123,49 @@ describe("getStudentByUid", () => {
     expect(pool.query).toHaveBeenCalledWith(getStudentByUidQuery, [studentUid]);
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
-      student_uid: studentUid,
+      student_uid: "03279879-c371-4102-8334-8bebe3617b9e",
       first_name: "Samantha",
       last_name: "Thomson",
       gender: "Female",
       email: "samanthathomson@gmail.com",
-      date_of_birth: "1979-05-04T06:00:00.000Z",
+      date_of_birth: "1979-05-04T06:00:00.000Z"
     });
+  });
+  it("should return a 404 error if student is not found", async () => {
+    const req = {
+      params: {
+        uid: studentUid,
+      },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+    const pool = {
+      query: jest.fn().mockResolvedValue({ rows: [] }),
+    };
+    await getStudentByUid(req, res, pool);
+    expect(pool.query).toHaveBeenCalledWith(getStudentByUidQuery, [studentUid]);
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({ message: "Student not found" });
+  });
+  it("should return a 500 error if an internal server error occurs", async () => { 
+    const req = {
+      params: {
+        uid: studentUid,
+      },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+    const pool = {
+      query: jest.fn().mockRejectedValue(new Error("Database error")),
+    };
+    await getStudentByUid(req, res, pool);
+    expect(pool.query).toHaveBeenCalledWith(getStudentByUidQuery, [studentUid]);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({ message: "Internal Server Error" });
   });
 });
 
