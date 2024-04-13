@@ -114,7 +114,7 @@ describe("getStudentByUid", () => {
             last_name: "Thomson",
             gender: "Female",
             email: "samanthathomson@gmail.com",
-            date_of_birth: "1979-05-04T06:00:00.000Z"
+            date_of_birth: "1979-05-04T06:00:00.000Z",
           },
         ],
       }),
@@ -128,7 +128,7 @@ describe("getStudentByUid", () => {
       last_name: "Thomson",
       gender: "Female",
       email: "samanthathomson@gmail.com",
-      date_of_birth: "1979-05-04T06:00:00.000Z"
+      date_of_birth: "1979-05-04T06:00:00.000Z",
     });
   });
   it("should return a 404 error if student is not found", async () => {
@@ -149,7 +149,7 @@ describe("getStudentByUid", () => {
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.send).toHaveBeenCalledWith({ message: "Student not found" });
   });
-  it("should return a 500 error if an internal server error occurs", async () => { 
+  it("should return a 500 error if an internal server error occurs", async () => {
     const req = {
       params: {
         uid: studentUid,
@@ -166,6 +166,27 @@ describe("getStudentByUid", () => {
     expect(pool.query).toHaveBeenCalledWith(getStudentByUidQuery, [studentUid]);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ message: "Internal Server Error" });
+  });
+});
+
+describe("addStudent", () => {
+  it("should add a student and return success message", async () => {
+    const req = {
+      body: {
+        first_name: "Richard",
+        last_name: "Anderson",
+        gender: "Male", 
+        email: "richard@gmail.com", 
+        date_of_birth: "1945-05-19T05:00:00.000Z"
+      },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    const pool = {
+      query: jest.fn().mockResolvedValue({ rows: [] }),
+    };
   });
 });
 
