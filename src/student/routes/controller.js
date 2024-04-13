@@ -27,7 +27,7 @@ const getStudentByUid = async (req, res, poolOverride) => {
       res.status(404).send({ message: "Student not found" });
       return;
     }
-    res.json(rows[0]);
+    res.status(200).json(rows[0]).header("Content-Type", "application/json");
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error" });
   }

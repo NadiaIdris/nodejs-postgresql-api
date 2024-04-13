@@ -1,11 +1,16 @@
-const { getStudents, deleteStudentByUid } = require("./controller");
+const {
+  getStudents,
+  getStudentByUid,
+  deleteStudentByUid,
+} = require("./controller");
 const {
   deleteStudentByUidQuery,
   getStudentsQuery,
+  getStudentByUidQuery,
 } = require("./../../../database/queries");
 
 describe("getStudents", () => {
-  it("should return an empty list if no students exist", async () => { 
+  it("should return an empty list if no students exist", async () => {
     const req = {};
     const res = {
       status: jest.fn().mockReturnThis(),
@@ -36,7 +41,15 @@ describe("getStudents", () => {
             gender: null,
             email: "tom@gmail.com",
             date_of_birth: "1988-12-30T06:00:00.000Z",
-          }
+          },
+          {
+            student_uid: "78507875-56fc-42d9-9379-d376013edd9",
+            first_name: "Samantha",
+            last_name: "Thomson",
+            gender: "Female",
+            email: "samanthathomson@gmail.com",
+            date_of_birth: "1979-05-04T06:00:00.000Z",
+          },
         ],
       }),
     };
@@ -51,11 +64,19 @@ describe("getStudents", () => {
         gender: null,
         email: "tom@gmail.com",
         date_of_birth: "1988-12-30T06:00:00.000Z",
-      }
+      },
+      {
+        student_uid: "78507875-56fc-42d9-9379-d376013edd9",
+        first_name: "Samantha",
+        last_name: "Thomson",
+        gender: "Female",
+        email: "samanthathomson@gmail.com",
+        date_of_birth: "1979-05-04T06:00:00.000Z",
+      },
     ]);
   });
 
-  it("should return a 500 error if an internal server error occurs", async () => { 
+  it("should return a 500 error if an internal server error occurs", async () => {
     const req = {};
     const res = {
       status: jest.fn().mockReturnThis(),
@@ -68,6 +89,46 @@ describe("getStudents", () => {
     expect(pool.query).toHaveBeenCalledWith(getStudentsQuery);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.send).toHaveBeenCalledWith({ message: "Internal Server Error" });
+  });
+});
+
+describe("getStudentByUid", () => {
+  const studentUid = "03279879-c371-4102-8334-8bebe3617b9e";
+  it("should return a student if the student exists", async () => {
+    const req = {
+      params: {
+        uid: studentUid,
+      },
+    };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    const pool = {
+      query: jest.fn().mockResolvedValue({
+        rows: [
+          {
+            student_uid: studentUid,
+            first_name: "Samantha",
+            last_name: "Thomson",
+            gender: "Female",
+            email: "samanthathomson@gmail.com",
+            date_of_birth: "1979-05-04T06:00:00.000Z",
+          },
+        ],
+      }),
+    };
+    await getStudentByUid(req, res, pool);
+    expect(pool.query).toHaveBeenCalledWith(getStudentByUidQuery, [studentUid]);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      student_uid: studentUid,
+      first_name: "Samantha",
+      last_name: "Thomson",
+      gender: "Female",
+      email: "samanthathomson@gmail.com",
+      date_of_birth: "1979-05-04T06:00:00.000Z",
+    });
   });
 });
 
@@ -151,6 +212,8 @@ describe("deleteStudentByUid", () => {
       partialStudentUid,
     ]);
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith({ message: "Internal Server Error" });
+    expect(res.send).toHaveBeenCalledWith({
+      message: "Internal Server Error",
+    });
   });
 });
