@@ -13,7 +13,6 @@ const getStudents = async (_, res, poolOverride) => {
     const { rows } = await pool.query(getStudentsQuery);
     res.status(200).json(rows);
   } catch (error) {
-    console.error(error.message);
     res.status(500).send({ message: "Internal Server Error" });
   }
 };
@@ -59,7 +58,7 @@ const addStudent = async (req, res, poolOverride) => {
     ]);
     res.status(201).json("Student has been created successfully!");
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    res.status(500).send({ message: "Internal Server Error" });
   }
 };
 
