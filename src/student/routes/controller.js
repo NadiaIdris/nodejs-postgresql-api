@@ -4,6 +4,7 @@ const {
   getStudentByUidQuery,
   addStudentQuery,
   checkEmailExistsQuery,
+  updateStudentByUidQuery,
   deleteStudentByUidQuery,
 } = require("./../../../database/queries");
 
@@ -62,6 +63,49 @@ const addStudent = async (req, res, poolOverride) => {
   }
 };
 
+const updateStudentByUid = async (req, res, poolOverride) => {
+  const pool = getPool(dbPool, poolOverride);
+  const studentUid = req.params.uid;
+
+  let { first_name, last_name, gender, email, date_of_birth } = req.body;
+  // Get student current data
+  let studentData;
+
+  // Check if student exists.
+  try {
+    const { rows } = await pool.query(getStudentByUidQuery, [studentUid]);
+    studentData = rows[0];
+    if (rows.length === 0) {
+      res.status(404).send({ message: "Student not found" });
+      return;
+    }
+  } catch (error) {
+    res.status(500).send({ message: "Internal Server Error..." });
+  }
+
+  // If the request body does not contain a field, use the current data.
+  first_name = first_name || studentData.first_name;
+  last_name = last_name || studentData.last_name;
+  email = email || studentData.email;
+  gender = gender || studentData.gender;
+  date_of_birth = date_of_birth || studentData.date_of_birth;
+
+  try {
+    const { rows } = await pool.query(updateStudentByUidQuery, [
+      first_name,
+      last_name,
+      email,
+      gender,
+      date_of_birth,
+      studentUid,
+    ]);
+    res.status(201).json(rows[0]);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+    return;
+  }
+};
+
 const deleteStudentByUid = async (req, res, poolOverride) => {
   const pool = getPool(dbPool, poolOverride);
 
@@ -72,7 +116,6 @@ const deleteStudentByUid = async (req, res, poolOverride) => {
       res.status(404).send({ message: "Student not found" });
       return;
     }
-
     res.status(200).send(`Student deleted with UID: ${studentUid}`);
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error" });
@@ -95,5 +138,6 @@ module.exports = {
   getStudents,
   getStudentByUid,
   addStudent,
+  updateStudentByUid,
   deleteStudentByUid,
 };
