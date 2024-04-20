@@ -1,10 +1,23 @@
-const getStudentsQuery = "SELECT * FROM student";
-const getStudentByUidQuery = "SELECT * FROM student WHERE student_uid = $1";
-const addStudentQuery =
-  "INSERT INTO student (student_uid, first_name, last_name, gender, email, date_of_birth) VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5) RETURNING *";
-const checkEmailExistsQuery = "SELECT email FROM student WHERE email = $1";
-const updateStudentByUidQuery = "UPDATE student SET first_name = $1, last_name = $2, email = $3, gender = $4, date_of_birth = $5 WHERE student_uid = $6 RETURNING *";
-const deleteStudentByUidQuery = "DELETE FROM student WHERE student_uid = $1 RETURNING *";
+const { STUDENT_CONSTANTS } = require("./databaseConstants");
+
+const {
+  STUDENT,
+  STUDENT_UID,
+  FIRST_NAME,
+  LAST_NAME,
+  GENDER,
+  EMAIL,
+  DATE_OF_BIRTH,
+} = STUDENT_CONSTANTS;
+
+const getRegisteredUser = `SELECT * FROM registered_user WHERE email = $1`;
+
+const getStudentsQuery = `SELECT * FROM ${STUDENT}`;
+const getStudentByUidQuery = `SELECT * FROM ${STUDENT} WHERE ${STUDENT_UID} = $1`;
+const addStudentQuery = `INSERT INTO ${STUDENT} (${STUDENT_UID}, ${FIRST_NAME}, ${LAST_NAME}, ${GENDER}, ${EMAIL}, ${DATE_OF_BIRTH}) VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5) RETURNING *`;
+const checkEmailExistsQuery = `SELECT ${EMAIL} FROM ${STUDENT} WHERE ${EMAIL} = $1`;
+const updateStudentByUidQuery = `UPDATE ${STUDENT} SET ${FIRST_NAME} = $1, ${LAST_NAME} = $2, ${EMAIL} = $3, ${GENDER} = $4, ${DATE_OF_BIRTH} = $5 WHERE ${STUDENT_UID} = $6 RETURNING *`;
+const deleteStudentByUidQuery = `DELETE FROM ${STUDENT} WHERE ${STUDENT_UID} = $1 RETURNING *`;
 
 module.exports = {
   getStudentsQuery,
@@ -12,5 +25,5 @@ module.exports = {
   addStudentQuery,
   checkEmailExistsQuery,
   updateStudentByUidQuery,
-  deleteStudentByUidQuery
+  deleteStudentByUidQuery,
 };
