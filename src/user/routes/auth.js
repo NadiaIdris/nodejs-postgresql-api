@@ -10,18 +10,6 @@ const {
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const generateAccessToken = (uid) => {
-  return jwt.sign({ uid }, process.env.TOKEN_SECRET, {
-    expiresIn: 60 * 60, // 1 hour
-  });
-};
-
-const encryptPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  return hashedPassword;
-};
-
 const registerUser = async (req, res) => {
   // Validate the user data sent to the server.
   const { error } = validateRegistrationData(req.body);
@@ -87,5 +75,17 @@ const loginUser = async (req, res) => {
     return res.status(500).send("Internal Server Error while checking email");
   }
 };
+
+function generateAccessToken(uid) {
+  return jwt.sign({ uid }, process.env.TOKEN_SECRET, {
+    expiresIn: 60 * 60, // 1 hour
+  });
+}
+
+async function encryptPassword(password) {
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+  return hashedPassword;
+}
 
 module.exports = { registerUser, loginUser };
