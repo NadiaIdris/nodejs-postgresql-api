@@ -11,4 +11,13 @@ const validateRegistrationData = (data) => {
   return schema.validate(data);
 };
 
-module.exports = { validateRegistrationData };
+const validateLoginData = (data) => { 
+  const schema = Joi.object({
+    email: Joi.string().email().min(3).max(255).required(),
+    password: Joi.string().min(6).max(1024).required(),
+  });
+
+  return schema.validate(data);
+};
+
+module.exports = { validateRegistrationData, validateLoginData };
