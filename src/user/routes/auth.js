@@ -3,9 +3,24 @@ const {
   checkRegUserEmailExistsQuery,
   addRegUserQuery,
 } = require("../../../database/queries");
-const { validateRegistrationData, validateLoginData } = require("../../../validation");
+const {
+  validateRegistrationData,
+  validateLoginData,
+} = require("../../../validation");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
+const generateAccessToken = (uid) => {
+  return jwt.sign({ uid }, process.env.TOKEN_SECRET, {
+    expiresIn: 60 * 60, // 1 hour
+  });
+};
+
+const encryptPassword = async (password) => {
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+  return hashedPassword;
+};
 
 const registerUser = async (req, res) => {
   // Validate the user data sent to the server.
@@ -26,8 +41,7 @@ const registerUser = async (req, res) => {
   }
 
   // Hash the password.
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
+  const hashedPassword = await encryptPassword(password);
 
   // Crate a new user and add the user to the database.
   try {
@@ -49,30 +63,29 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   // Validate the user data sent to the server.
   const { error } = validateLoginData(req.body);
-  if (error) { 
+  if (error) {
     return res.status(400).send(error.details[0].message);
   }
 
   // Check if the user exists in the database.
   const { email, password: logInPassword } = req.body;
-  try { 
+  try {
     const { rows } = await pool.query(checkRegUserEmailExistsQuery, [email]);
     if (rows.length === 0) {
       return res.status(400).send("Email or password is incorrect");
     }
     // Check if the password is correct.
-    const uid = rows[0].registered_user_uid;
-    const passwordInDB = rows[0].password;
+    const { password: passwordInDB, registered_user_uid: uid } = rows[0];
     const validPassword = await bcrypt.compare(logInPassword, passwordInDB);
     if (!validPassword) {
       return res.status(400).send("Email or password is incorrect");
     }
     // Generate jwt token and send it to the client.
-    const jwtToken = jwt.sign({ uid: uid }, process.env.TOKEN_SECRET);
-    res.header("auth-token", jwtToken).send(jwtToken);
-  } catch (error) { 
+    const accessToken = generateAccessToken(uid);
+    res.header("auth-token", accessToken).send(accessToken);
+  } catch (error) {
     return res.status(500).send("Internal Server Error while checking email");
   }
- };
+};
 
 module.exports = { registerUser, loginUser };
