@@ -1,18 +1,14 @@
-const Joi = require("@hapi/joi");
 const pool = require("../../../database/database");
-const { checkRegUserEmailExistsQuery } = require("../../../database/queries");
+const {
+  checkRegUserEmailExistsQuery,
+  addRegUserQuery,
+} = require("../../../database/queries");
+const { validateRegistrationData } = require("../../../validation");
+const bcrypt = require("bcrypt");
 
 const registerUser = async (req, res) => {
-  // Validate the data.
-  const schema = Joi.object({
-    first_name: Joi.string().min(1).max(100).required(),
-    last_name: Joi.string().min(2).max(100).required(),
-    email: Joi.string().email().min(3).max(255).required(),
-    password: Joi.string().min(6).max(1024).required(),
-  });
-
-  const { error } = schema.validate(req.body);
-
+  // Validate the user data sent to the server.
+  const { error } = validateRegistrationData(req.body);
   if (error) {
     return res.status(400).send(error.details[0].message);
   }
@@ -25,14 +21,28 @@ const registerUser = async (req, res) => {
       return res.status(409).send("Email already exists");
     }
   } catch (error) {
-    return res.status(500).send("Internal Server Error");
+    return res.status(500).send("Internal Server Error while checking email");
   }
+
   // Hash the password.
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
 
-  // Crate a new user.
-
-  // Add the user to the database.
-  // return
+  // Crate a new user and add the user to the database.
+  try {
+    const { rows } = await pool.query(addRegUserQuery, [
+      first_name,
+      last_name,
+      email,
+      hashedPassword,
+    ]);
+    let uid = rows[0].registered_user_uid;
+    res
+      .status(201)
+      .send(`User with uid: ${uid} has been created successfully!`);
+  } catch (error) {
+    res.status(500).send("Internal Server Error while adding user to database");
+  }
 };
 
 module.exports = { registerUser };

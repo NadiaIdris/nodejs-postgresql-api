@@ -14,6 +14,7 @@ const {
 } = REGISTERED_USER_CONSTANTS;
 
 const checkRegUserEmailExistsQuery = `SELECT * FROM ${REG_USER} WHERE ${REG_USER_EMAIL} = $1`;
+const addRegUserQuery = `INSERT INTO ${REG_USER} (${REG_USER_UID}, ${REG_USER_FIRST_NAME}, ${REG_USER_LAST_NAME}, ${REG_USER_EMAIL}, ${REG_USER_PASSWORD}) VALUES (uuid_generate_v4(), $1, $2, $3, $4) RETURNING ${REG_USER_UID}`;
 
 /* Student table queries */
 const {
@@ -35,6 +36,7 @@ const deleteStudentByUidQuery = `DELETE FROM ${STUDENT} WHERE ${STUDENT_UID} = $
 
 module.exports = {
   checkRegUserEmailExistsQuery,
+  addRegUserQuery,
   getStudentsQuery,
   getStudentByUidQuery,
   addStudentQuery,
