@@ -9,9 +9,9 @@ const {
 const verifyJWTToken = require("./verifyJWTToken");
 
 router.get("/", verifyJWTToken, getStudents);
-router.post("/addStudent", addStudent);
-router.get("/:uid", getStudentByUid);
-router.put("/:uid", updateStudentByUid);
-router.delete("/:uid", deleteStudentByUid);
+router.post("/addStudent", verifyJWTToken, addStudent);
+router.get("/:uid", verifyJWTToken, getStudentByUid);
+router.put("/:uid", verifyJWTToken, updateStudentByUid);
+router.delete("/:uid", verifyJWTToken, deleteStudentByUid);
 
 module.exports = router;
