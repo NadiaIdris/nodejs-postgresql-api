@@ -6,7 +6,7 @@ const {
   checkEmailExistsQuery,
   updateStudentByUidQuery,
   deleteStudentByUidQuery,
-} = require("./../../../database/queries");
+} = require("../../../database/queries");
 
 const getStudents = async (_, res, poolOverride) => {
   const pool = getPool(dbPool, poolOverride);

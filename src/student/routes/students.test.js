@@ -10,7 +10,7 @@ const {
   deleteStudentByUidQuery,
   getStudentsQuery,
   getStudentByUidQuery,
-} = require("./../../../database/queries");
+} = require("../../../database/queries");
 
 describe("getStudents", () => {
   it("should return an empty list if no students exist", async () => {

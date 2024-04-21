@@ -4,8 +4,8 @@ const {
   getStudentByUid,
   addStudent,
   updateStudentByUid,
-  deleteStudentByUid
-} = require("./controller");
+  deleteStudentByUid,
+} = require("./students");
 
 router.get("/", getStudents);
 router.post("/addStudent", addStudent);
