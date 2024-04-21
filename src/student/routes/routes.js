@@ -6,8 +6,9 @@ const {
   updateStudentByUid,
   deleteStudentByUid,
 } = require("./students");
+const verifyJWTToken = require("./verifyJWTToken");
 
-router.get("/", getStudents);
+router.get("/", verifyJWTToken, getStudents);
 router.post("/addStudent", addStudent);
 router.get("/:uid", getStudentByUid);
 router.put("/:uid", updateStudentByUid);
