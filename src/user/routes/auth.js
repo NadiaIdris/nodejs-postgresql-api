@@ -10,7 +10,7 @@ const {
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const registerUser = async (req, res) => {
+const signupUser = async (req, res) => {
   // Validate the user data sent to the server.
   const { error } = validateRegistrationData(req.body);
   if (error) {
@@ -88,4 +88,4 @@ async function encryptPassword(password) {
   return hashedPassword;
 }
 
-module.exports = { registerUser, loginUser };
+module.exports = { signupUser, loginUser };
