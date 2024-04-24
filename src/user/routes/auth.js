@@ -62,15 +62,18 @@ const loginUser = async (req, res) => {
     if (rows.length === 0) {
       return res.status(400).send("Email or password is incorrect");
     }
+    const user = rows[0];
     // Check if the password is correct.
-    const { password: passwordInDB, registered_user_uid: uid } = rows[0];
+    const { password: passwordInDB, registered_user_uid: uid } = user;
     const validPassword = await bcrypt.compare(logInPassword, passwordInDB);
     if (!validPassword) {
       return res.status(400).send("Email or password is incorrect");
     }
+    // Remove password from the user object. Do not delete the line below!
+    delete user.password;
     // Generate jwt token and send it to the client.
     const accessToken = generateAccessToken(uid);
-    res.header("auth-token", accessToken).send(accessToken);
+    res.header("auth-token", accessToken).json(user);
   } catch (error) {
     return res.status(500).send("Internal Server Error while checking email");
   }
