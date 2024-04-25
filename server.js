@@ -10,7 +10,8 @@ const port = 4000;
 app.use(express.json());
 // Express middleware to enable CORS
 app.use(cors({
-  origin: 'http://localhost:3000' // Replace with your React app's URL
+  origin: 'http://localhost:3000', // Replace with your React app's URL,
+  'Access-Control-Allow-Origin': 'http://localhost:3000'
 }));
 
 app.use('/api/v1/user', authRoute)

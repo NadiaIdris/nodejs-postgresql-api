@@ -73,7 +73,11 @@ const loginUser = async (req, res) => {
     delete user.password;
     // Generate jwt token and send it to the client.
     const accessToken = generateAccessToken(uid);
-    res.status(200).header("Authorization", accessToken).json(user);
+    res
+      .status(200)
+      .header("Authorization", accessToken)
+      .header("Access-Control-Expose-Headers", "Authorization")
+      .json(user);
   } catch (error) {
     return res.status(500).send("Internal Server Error while checking email");
   }
