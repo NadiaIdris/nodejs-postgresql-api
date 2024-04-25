@@ -60,29 +60,31 @@ const loginUser = async (req, res) => {
   try {
     const { rows } = await pool.query(checkRegUserEmailExistsQuery, [email]);
     if (rows.length === 0) {
-      return res.status(400).send("Email or password is incorrect");
+      return res.status(401).send("Email or password is incorrect");
     }
     const user = rows[0];
     // Check if the password is correct.
     const { password: passwordInDB, registered_user_uid: uid } = user;
     const validPassword = await bcrypt.compare(logInPassword, passwordInDB);
     if (!validPassword) {
-      return res.status(400).send("Email or password is incorrect");
+      return res.status(401).send("Email or password is incorrect");
     }
-    // Remove password from the user object. Do not delete the line below!
+    // Remove password from the user object. Do not delete the line below!!!
     delete user.password;
     // Generate jwt token and send it to the client.
     const accessToken = generateAccessToken(uid);
-    res.header("auth-token", accessToken).json(user);
+    res.status(200).header("Authorization", accessToken).json(user);
   } catch (error) {
     return res.status(500).send("Internal Server Error while checking email");
   }
 };
 
 function generateAccessToken(uid) {
-  return jwt.sign({ uid }, process.env.TOKEN_SECRET, {
+  const token = jwt.sign({ uid }, process.env.TOKEN_SECRET, {
     expiresIn: 60 * 60, // 1 hour
   });
+  const bearerToken = `Bearer ${token}`;
+  return bearerToken;
 }
 
 async function encryptPassword(password) {
