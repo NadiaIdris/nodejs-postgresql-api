@@ -4,7 +4,7 @@ const {
   addRegUserQuery,
 } = require("../../../database/queries");
 const {
-  validateRegistrationData,
+  validateSignUpData,
   validateLoginData,
 } = require("../../../validation");
 const bcrypt = require("bcrypt");
@@ -12,7 +12,7 @@ const jwt = require("jsonwebtoken");
 
 const signupUser = async (req, res) => {
   // Validate the user data sent to the server.
-  const { error } = validateRegistrationData(req.body);
+  const { error } = validateSignUpData(req.body);
   if (error) {
     return res.status(400).send(error.details[0].message);
   }
