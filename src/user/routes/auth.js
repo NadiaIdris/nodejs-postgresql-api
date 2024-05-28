@@ -84,9 +84,7 @@ const loginUser = async (req, res) => {
 };
 
 function generateAccessToken(uid) {
-  const token = jwt.sign({ uid }, process.env.TOKEN_SECRET, {
-    expiresIn: 60 * 60, // 1 hour
-  });
+  const token = jwt.sign({ uid }, process.env.TOKEN_SECRET);
   const bearerToken = `Bearer ${token}`;
   return bearerToken;
 }
