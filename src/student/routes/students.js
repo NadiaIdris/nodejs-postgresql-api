@@ -67,14 +67,16 @@ const updateStudentByUid = async (req, res, poolOverride) => {
   const pool = getPool(dbPool, poolOverride);
   const studentUid = req.params.uid;
 
-  let { first_name, last_name, gender, email, date_of_birth } = req.body;
+  const { first_name: form_first_name, last_name: form_last_name, gender: form_gender, email: form_email, date_of_birth: form_date_of_birth } = req.body;
+  console.log("+++ form -> req.body: ", req.body);
   // Get student current data
-  let studentData;
+  let dbData;
 
   // Check if student exists.
   try {
     const { rows } = await pool.query(getStudentByUidQuery, [studentUid]);
-    studentData = rows[0];
+    dbData = rows[0];
+    console.log("+++ db -> studentData: ", dbData);
     if (rows.length === 0) {
       res.status(404).send({ message: "Student not found" });
       return;
@@ -83,12 +85,15 @@ const updateStudentByUid = async (req, res, poolOverride) => {
     res.status(500).send({ message: "Internal Server Error..." });
   }
 
-  // If the request body does not contain a field, use the current data.
-  first_name = first_name || studentData.first_name;
-  last_name = last_name || studentData.last_name;
-  email = email || studentData.email;
-  gender = gender || studentData.gender;
-  date_of_birth = date_of_birth || studentData.date_of_birth;
+  // If the request body (form data) does not contain a field, use the database data.
+  const first_name = form_first_name || dbData.first_name;
+  const last_name = form_last_name || dbData.last_name;
+  const email = form_email || dbData.email;
+  const date_of_birth = form_date_of_birth || dbData.date_of_birth;
+  // gender may be null, which is why it is different than the rest.
+  // If the form does not contain gender, set it to null.
+  // If the form contains gender, then use it.
+  const gender = form_gender === "" ? null : form_gender;
 
   try {
     const { rows } = await pool.query(updateStudentByUidQuery, [
@@ -99,7 +104,7 @@ const updateStudentByUid = async (req, res, poolOverride) => {
       date_of_birth,
       studentUid,
     ]);
-    res.status(201).json(rows[0]);
+    res.status(200).json(rows[0]); // Status code 200 means OK
   } catch (error) {
     res.status(500).send({ message: error.message });
     return;
