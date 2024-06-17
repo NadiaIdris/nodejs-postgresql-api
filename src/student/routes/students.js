@@ -67,8 +67,14 @@ const updateStudentByUid = async (req, res, poolOverride) => {
   const pool = getPool(dbPool, poolOverride);
   const studentUid = req.params.uid;
 
-  const { first_name: form_first_name, last_name: form_last_name, gender: form_gender, email: form_email, date_of_birth: form_date_of_birth } = req.body;
-  console.log("+++ form -> req.body: ", req.body);
+  const {
+    first_name: form_first_name,
+    last_name: form_last_name,
+    gender: form_gender,
+    email: form_email,
+    date_of_birth: form_date_of_birth,
+  } = req.body;
+ 
   // Get student current data
   let dbData;
 
@@ -76,7 +82,6 @@ const updateStudentByUid = async (req, res, poolOverride) => {
   try {
     const { rows } = await pool.query(getStudentByUidQuery, [studentUid]);
     dbData = rows[0];
-    console.log("+++ db -> studentData: ", dbData);
     if (rows.length === 0) {
       res.status(404).send({ message: "Student not found" });
       return;
