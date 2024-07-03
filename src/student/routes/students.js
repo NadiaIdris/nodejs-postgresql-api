@@ -30,6 +30,7 @@ const getStudentByUid = async (req, res, poolOverride) => {
     res.status(200).json(rows[0]);
   } catch (error) {
     res.status(500).send({ message: "Internal Server Error" });
+    return;
   }
 };
 

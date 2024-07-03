@@ -2,6 +2,7 @@ const pool = require("../../../database/database");
 const {
   checkRegUserEmailExistsQuery,
   addRegUserQuery,
+  deleteRegUserQuery,
 } = require("../../../database/queries");
 const {
   validateSignUpData,
@@ -83,6 +84,20 @@ const loginUser = async (req, res) => {
   }
 };
 
+const deleteUserByUid = async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const { rows } = await pool.query(deleteRegUserQuery, [userId]);
+    if (rows.length === 0) {
+      res.status(404).send("User not found");
+      return;
+    }
+    res.status(200).send(`User with uid: ${userId} has been deleted`);
+  } catch (error) {
+    res.status(500).send("Internal Server Error while deleting user");
+  }
+};
+
 function generateAccessToken(uid) {
   const token = jwt.sign({ uid }, process.env.TOKEN_SECRET);
   const bearerToken = `Bearer ${token}`;
@@ -95,4 +110,4 @@ async function encryptPassword(password) {
   return hashedPassword;
 }
 
-module.exports = { signupUser, loginUser };
+module.exports = { signupUser, loginUser, deleteUserByUid };

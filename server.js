@@ -14,6 +14,8 @@ app.use(cors({
   'Access-Control-Allow-Origin': 'http://localhost:3000'
 }));
 
+app.use(express.static('../client/build'))
+
 app.use('/api/v1/user', authRoute)
 app.use("/api/v1/students", studentRoutes);
 
