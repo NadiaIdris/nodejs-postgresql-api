@@ -23,13 +23,17 @@ app.use("/api/v1/user", authRoute);
 app.use("/api/v1/students", studentRoutes);
 
 // Test connection to db by sending a query. Connect to the db
-pool.query("SELECT NOW();", (err, res) => {
+const query = `SELECT EXISTS (
+  SELECT datname FROM pg_database WHERE datname = 'students_db'
+);`;
+
+pool.query(query, (err, res) => {
   if (err) {
     console.log("Error: ", err);
     console.log("Failed to connect to the database");
     return;
   } else {
-    console.log("Connected to database: ", res.rows[0].now);
+    console.log("Connected to database: ", res.rows[0]);
 
     app.listen(port, () => {
       console.log(`Server started at port ${port}`);
