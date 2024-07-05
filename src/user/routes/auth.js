@@ -15,6 +15,7 @@ const signupUser = async (req, res) => {
   // Validate the user data sent to the server.
   const { error } = validateSignUpData(req.body);
   if (error) {
+    console.log("signupUser -> Validate the user data sent to the server errors out: ", error);
     return res.status(400).send(error.details[0].message);
   }
 
@@ -23,16 +24,18 @@ const signupUser = async (req, res) => {
   try {
     const { rows } = await pool.query(checkRegUserEmailExistsQuery, [email]);
     if (rows.length > 0) {
+      console.log("signupUser -> Email already exists sends status code 409: ", rows);
       return res.status(409).send("Email already exists");
     }
   } catch (error) {
+    console.log("signupUser -> Check that user in not already in the database errors out: ", error);
     return res.status(500).send("Internal Server Error while checking email");
   }
 
   // Hash the password.
   const hashedPassword = await encryptPassword(password);
 
-  // Crate a new user and add the user to the database.
+  // Create a new user and add the user to the database.
   try {
     const { rows } = await pool.query(addRegUserQuery, [
       first_name,
@@ -41,10 +44,12 @@ const signupUser = async (req, res) => {
       hashedPassword,
     ]);
     let uid = rows[0].registered_user_uid;
+    console.log("User has been created successfully! -->", uid)
     res
       .status(201)
       .send(`User with uid: ${uid} has been created successfully!`);
   } catch (error) {
+    console.log("signupUser -> Create a new user and add the user to the database errors out: ", error);
     res.status(500).send("Internal Server Error while adding user to database");
   }
 };
@@ -101,12 +106,14 @@ const deleteUserByUid = async (req, res) => {
 function generateAccessToken(uid) {
   const token = jwt.sign({ uid }, process.env.TOKEN_SECRET);
   const bearerToken = `Bearer ${token}`;
+  console.log("generateAccessToken -> bearerToken: ", bearerToken);
   return bearerToken;
 }
 
 async function encryptPassword(password) {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
+  console.log("encryptPassword -> hashedPassword: ", hashedPassword);
   return hashedPassword;
 }
 
