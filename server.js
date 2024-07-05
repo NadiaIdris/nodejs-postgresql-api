@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const studentRoutes = require("./src/student/routes/routes");
 const authRoute = require("./src/user/routes/routes");
+const pool = require("./database/database");
 require("dotenv").config();
 
 let origin = "*";
@@ -21,6 +22,17 @@ app.use(
 app.use("/api/v1/user", authRoute);
 app.use("/api/v1/students", studentRoutes);
 
-app.listen(port, () => {
-  console.log(`Server started at port ${port}`);
+// Test connection to db by sending a query. Connect to the db
+pool.query("SELECT NOW();", (err, res) => {
+  if (err) {
+    console.log("Error: ", err);
+    console.log("Failed to connect to the database");
+    return;
+  } else {
+    console.log("Connected to database: ", res.rows[0].now);
+
+    app.listen(port, () => {
+      console.log(`Server started at port ${port}`);
+    });
+  }
 });
