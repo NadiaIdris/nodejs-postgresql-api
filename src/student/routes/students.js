@@ -12,8 +12,10 @@ const getStudents = async (_, res, poolOverride) => {
   const pool = getPool(dbPool, poolOverride);
   try {
     const { rows } = await pool.query(getStudentsQuery);
+    console.log("getStudents -> rows: ", rows)
     res.status(200).json(rows);
   } catch (error) {
+    console.log("getStudents -> error: ", error)
     res.status(500).send({ message: "Internal Server Error" });
   }
 };
