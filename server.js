@@ -19,6 +19,12 @@ app.use(
   })
 );
 
+// Make /api/v1/status route display a message
+app.get("/api/v1/status", (req, res) => {
+  res.status(200).send("API Server is running");
+});
+
+// Actual routes
 app.use("/api/v1/user", authRoute);
 app.use("/api/v1/students", studentRoutes);
 
