@@ -19,7 +19,7 @@ app.use(
   })
 );
 
-// Make /api/v1/status route display a message
+// Make / route display a message
 app.get("/", (req, res) => {
   res.status(200).send("API Server is running");
 });
