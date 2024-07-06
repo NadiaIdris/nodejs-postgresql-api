@@ -21,6 +21,7 @@ app.use(
 
 // Make / route display a message
 app.get("/", (req, res) => {
+  console.log("API Server is running");
   res.status(200).send("API Server is running");
 });
 
